@@ -1,7 +1,12 @@
+/*
+Package lexer provides functionality to tokenize source code for the Leopard programming language.
+It reads the input string and converts it into a series of tokens that can be processed by a parser.
+*/
 package lexer
 
 import "leopard/token"
 
+// NextToken returns the next token in the input and advances the lexer
 func (l *Lexer) NextToken() token.Token {
 	var tok token.Token
 
@@ -80,6 +85,7 @@ func (l *Lexer) NextToken() token.Token {
 	return tok
 }
 
+// peekChar returns the next character without advancing the lexer.
 func (l *Lexer) peekChar() byte {
 	if l.readPosition >= len(l.input) {
 		return 0
@@ -88,6 +94,7 @@ func (l *Lexer) peekChar() byte {
 	}
 }
 
+// readNumber reads a sequence of digits as a number literal.
 func (l *Lexer) readNumber() string {
 	position := l.position
 	for isDigit(l.ch) {
@@ -96,16 +103,19 @@ func (l *Lexer) readNumber() string {
 	return l.input[position:l.position]
 }
 
+// isDigit checks if a character is a numeric digit
 func isDigit(ch byte) bool {
 	return '0' <= ch && ch <= '9'
 }
 
+// skipWhitespace advances the lexer past whitespace characters.
 func (l *Lexer) skipWhitespace() {
 	for l.ch == ' ' || l.ch == '\t' || l.ch == '\n' || l.ch == '\r' {
 		l.readChar()
 	}
 }
 
+// readIdentifier reads a sequence of letters as an identifier.
 func (l *Lexer) readIdentifier() string {
 	position := l.position
 	for isLetter(l.ch) {
@@ -114,14 +124,17 @@ func (l *Lexer) readIdentifier() string {
 	return l.input[position:l.position]
 }
 
+// isLetter checks if a character is a letter or underscore.
 func isLetter(ch byte) bool {
 	return 'a' <= ch && ch <= 'z' || 'A' <= ch && ch <= 'Z' || ch == '_'
 }
 
+// newToken create a new token with the given type and character.
 func newToken(tokenType token.TokenType, ch byte) token.Token {
 	return token.Token{Type: tokenType, Literal: string(ch)}
 }
 
+// Lexer represents a lexical scanner for tokenizing source code.
 type Lexer struct {
 	input        string
 	position     int  // current position in input (points to current char)
@@ -129,12 +142,14 @@ type Lexer struct {
 	ch           byte // current char under examination
 }
 
+// New creates a new Lexer for the given input.
 func New(input string) *Lexer {
 	l := &Lexer{input: input}
 	l.readChar()
 	return l
 }
 
+// readChar advances to the next character in the input.
 func (l *Lexer) readChar() {
 	if l.readPosition >= len(l.input) {
 		l.ch = 0
@@ -145,6 +160,7 @@ func (l *Lexer) readChar() {
 	l.readPosition += 1
 }
 
+// readString reads a string literal enclosed in double quotes.
 func (l *Lexer) readString() string {
 	position := l.position + 1
 	for {

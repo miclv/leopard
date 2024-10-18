@@ -1,3 +1,9 @@
+/*
+Package repl implements the Read-Eval-Print Loop (REPL for the Leopard programming language.
+
+This package provides the functionality to read input, evaluate expressions,
+and print results or errors to the specified output
+*/
 package repl
 
 import (
@@ -12,6 +18,8 @@ import (
 
 const PROMPT = ">> "
 
+// Start initializes the REPL, reading from the provided input and writing
+// results to the provided output. It continues until EOF is reached.
 func Start(in io.Reader, out io.Writer) {
 	scanner := bufio.NewScanner(in)
 	env := object.NewEnvironment()
@@ -41,6 +49,7 @@ func Start(in io.Reader, out io.Writer) {
 	}
 }
 
+// printParserErrors outputs the parsing errors into the specified writer.
 func printParserErrors(out io.Writer, errors []string) {
 	io.WriteString(out, "Parser errors:\n")
 	for _, msg := range errors {

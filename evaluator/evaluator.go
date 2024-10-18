@@ -1,3 +1,8 @@
+/*
+Package evaluator provides functionality to evaluate the abstract syntax tree (AST) nodes
+representing a program in the Leopard language. It processes different types of expressions,
+statements, and literals, returning their corresponding object representations.
+*/
 package evaluator
 
 import (
@@ -6,12 +11,15 @@ import (
 	"leopard/object"
 )
 
+// Global values for NULL, TRUE, and FALSE
 var (
 	NULL  = &object.Null{}
 	TRUE  = &object.Boolean{Value: true}
 	FALSE = &object.Boolean{Value: false}
 )
 
+// Eval evaluates an AST node and returns an object.Object representation.
+// Supports evaluation of programs, expressions, and various literal types.
 func Eval(node ast.Node, env *object.Environment) object.Object {
 	switch node := node.(type) {
 
@@ -114,6 +122,8 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 	return nil
 }
 
+// applyFunction applies a function or built-in function to arguments.
+// Supports user-defined functions and built-in functions.
 func applyFunction(fn object.Object, args []object.Object) object.Object {
 	switch fn := fn.(type) {
 
@@ -130,6 +140,7 @@ func applyFunction(fn object.Object, args []object.Object) object.Object {
 	}
 }
 
+// extendFunctionEnv extends the function environment with argument bindings
 func extendFunctionEnv(fn *object.Function, args []object.Object) *object.Environment {
 	env := object.NewEnclosedEnvironment(fn.Env)
 
@@ -140,6 +151,7 @@ func extendFunctionEnv(fn *object.Function, args []object.Object) *object.Enviro
 	return env
 }
 
+// unwrapReturnValue extracts the value from a ReturnValue object
 func unwrapReturnValue(obj object.Object) object.Object {
 	if returnValue, ok := obj.(*object.ReturnValue); ok {
 		return returnValue
@@ -148,6 +160,7 @@ func unwrapReturnValue(obj object.Object) object.Object {
 	return obj
 }
 
+// evalExpressions evaluates a list of expressions and returns a list of objects.
 func evalExpressions(exps []ast.Expression, env *object.Environment) []object.Object {
 	var result []object.Object
 
@@ -162,6 +175,7 @@ func evalExpressions(exps []ast.Expression, env *object.Environment) []object.Ob
 	return result
 }
 
+// evalIdentifier evaluates an identifier by looking it up in the environment
 func evalIdentifier(node *ast.Identifier, env *object.Environment) object.Object {
 	if val, ok := env.Get(node.Value); ok {
 		return val
@@ -175,6 +189,7 @@ func evalIdentifier(node *ast.Identifier, env *object.Environment) object.Object
 	return newError("identifier not found: " + node.Value)
 }
 
+// evalBlockStatement evaluates a block statement and returns the result
 func evalBlockStatement(block *ast.BlockStatement, env *object.Environment) object.Object {
 	var result object.Object
 
@@ -192,6 +207,7 @@ func evalBlockStatement(block *ast.BlockStatement, env *object.Environment) obje
 	return result
 }
 
+// evalIfExpression evaluates an if-else expression and returns the result.
 func evalIfExpression(ie *ast.IfExpression, env *object.Environment) object.Object {
 	condition := Eval(ie.Condition, env)
 	if isError(condition) {
@@ -207,6 +223,7 @@ func evalIfExpression(ie *ast.IfExpression, env *object.Environment) object.Obje
 	}
 }
 
+// isTruthy determines if an object is true
 func isTruthy(obj object.Object) bool {
 	switch obj {
 	case NULL:
@@ -220,6 +237,8 @@ func isTruthy(obj object.Object) bool {
 	}
 }
 
+// evalIntegerInfixExpression evaluates infix expressions between two integer objects.
+// Supported operators: +, -, *, /, <, >, ==, !=.
 func evalIntegerInfixExpression(operator string, left, right object.Object) object.Object {
 	leftVal := left.(*object.Integer).Value
 	rightVal := right.(*object.Integer).Value
@@ -246,6 +265,7 @@ func evalIntegerInfixExpression(operator string, left, right object.Object) obje
 	}
 }
 
+// evalInfixExpression evaluates infix operations (+, -, *, etc.) on objects.
 func evalInfixExpression(operator string, left, right object.Object) object.Object {
 	switch {
 	case left.Type() == object.INTEGER_OBJ && right.Type() == object.INTEGER_OBJ:
@@ -263,6 +283,7 @@ func evalInfixExpression(operator string, left, right object.Object) object.Obje
 	}
 }
 
+// evalPrefixExpression evaluates prefix operations (!, -) on an object
 func evalPrefixExpression(operator string, right object.Object) object.Object {
 	switch operator {
 	case "!":
@@ -274,6 +295,7 @@ func evalPrefixExpression(operator string, right object.Object) object.Object {
 	}
 }
 
+// evalMinusPrefixOperatorExpression negates an integer value.
 func evalMinusPrefixOperatorExpression(right object.Object) object.Object {
 	if right.Type() != object.INTEGER_OBJ {
 		return newError("unknown operator: -%s", right.Type())
@@ -282,6 +304,7 @@ func evalMinusPrefixOperatorExpression(right object.Object) object.Object {
 	return &object.Integer{Value: -value}
 }
 
+// evalBangOperatorExpression inverts a boolean value.
 func evalBangOperatorExpression(right object.Object) object.Object {
 	switch right {
 	case TRUE:
@@ -295,6 +318,7 @@ func evalBangOperatorExpression(right object.Object) object.Object {
 	}
 }
 
+// nativeBoolToBooleanObject converts a native Go boolean to an object.Boolean
 func nativeBoolToBooleanObject(input bool) *object.Boolean {
 	if input {
 		return TRUE
@@ -302,6 +326,7 @@ func nativeBoolToBooleanObject(input bool) *object.Boolean {
 	return FALSE
 }
 
+// evalProgram evaluates a sequence of statements and returns the final result.
 func evalProgram(program *ast.Program, env *object.Environment) object.Object {
 	var result object.Object
 
@@ -319,10 +344,12 @@ func evalProgram(program *ast.Program, env *object.Environment) object.Object {
 	return result
 }
 
+// newError create a new error object with the given formatted message.
 func newError(format string, a ...interface{}) *object.Error {
 	return &object.Error{Message: fmt.Sprintf(format, a...)}
 }
 
+// isError check whether the given object is an error object.
 func isError(obj object.Object) bool {
 	if obj != nil {
 		return obj.Type() == object.ERROR_OBJ
@@ -330,6 +357,8 @@ func isError(obj object.Object) bool {
 	return false
 }
 
+// evalStringInfixExpression evaluates infix expressions between two string objects.
+// Supports concatenation using the "+" operator
 func evalStringInfixExpression(operator string, left, right object.Object) object.Object {
 	if operator != "+" {
 		return newError("unknown operator: %s %s %s", left.Type(), operator, right.Type())
@@ -340,6 +369,7 @@ func evalStringInfixExpression(operator string, left, right object.Object) objec
 	return &object.String{Value: leftVal + rightVal}
 }
 
+// evalIndexExpression evaluates index operations for arrays and hashes.
 func evalIndexExpression(left, index object.Object) object.Object {
 	switch {
 	case left.Type() == object.ARRAY_OBJ && index.Type() == object.INTEGER_OBJ:
@@ -351,6 +381,7 @@ func evalIndexExpression(left, index object.Object) object.Object {
 	}
 }
 
+// evalArrayIndexExpression retrieves an element from an array by its index.
 func evalArrayIndexExpression(array, index object.Object) object.Object {
 	arrayObject := array.(*object.Array)
 	idx := index.(*object.Integer).Value
@@ -363,6 +394,7 @@ func evalArrayIndexExpression(array, index object.Object) object.Object {
 	return arrayObject.Elements[idx]
 }
 
+// evalHashLiteral evaluates a hash literal, converting key-value pairs into a hash object.
 func evalHashLiteral(node *ast.HashLiteral, env *object.Environment) object.Object {
 	pairs := make(map[object.HashKey]object.HashPair)
 
@@ -389,6 +421,7 @@ func evalHashLiteral(node *ast.HashLiteral, env *object.Environment) object.Obje
 	return &object.Hash{Pairs: pairs}
 }
 
+// evalHashIndexExpression retrieves a value from a hash by its key.
 func evalHashIndexExpression(hash, index object.Object) object.Object {
 	hashObject := hash.(*object.Hash)
 

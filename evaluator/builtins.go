@@ -6,6 +6,8 @@ import (
 )
 
 var builtins = map[string]*object.Builtin{
+
+	// len returns the length of a given object
 	"len": &object.Builtin{
 		Fn: func(args ...object.Object) object.Object {
 			if len(args) != 1 {
@@ -23,6 +25,7 @@ var builtins = map[string]*object.Builtin{
 		},
 	},
 
+	// first returns the first element of the given array
 	"first": &object.Builtin{
 		Fn: func(args ...object.Object) object.Object {
 			if len(args) != 1 {
@@ -41,6 +44,7 @@ var builtins = map[string]*object.Builtin{
 		},
 	},
 
+	// last returns the last element of the given array
 	"last": &object.Builtin{
 		Fn: func(args ...object.Object) object.Object {
 			if len(args) != 1 {
@@ -60,6 +64,7 @@ var builtins = map[string]*object.Builtin{
 		},
 	},
 
+	// rest returns a new array containing all elements except the first one.
 	"rest": &object.Builtin{
 		Fn: func(args ...object.Object) object.Object {
 			if len(args) != 1 {
@@ -81,6 +86,7 @@ var builtins = map[string]*object.Builtin{
 		},
 	},
 
+	// push adds a new element to the end of the array
 	"push": &object.Builtin{
 		Fn: func(args ...object.Object) object.Object {
 			if len(args) != 2 {
@@ -102,6 +108,7 @@ var builtins = map[string]*object.Builtin{
 		},
 	},
 
+	// puts prints the given arguments on new lines to STDOUT.
 	"puts": &object.Builtin{
 		Fn: func(args ...object.Object) object.Object {
 			for _, arg := range args {
